@@ -8,5 +8,6 @@ namespace Tomatwo.DataStore
     {
         Task RunTransactionBlock(DataStore dataStore, Func<Task> block);
         Task<string> Add(Collection collection, IDictionary<string, object> data);
+        Task<IDictionary<string, object>> Get(Collection collection, string id);
     }
 }

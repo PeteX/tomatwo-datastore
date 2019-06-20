@@ -8,6 +8,7 @@ namespace DataStoreTest
         public string Name { get; set; }
         public string Gender;
         public int YearOfBirth;
+        public int FavouriteNumber { get; set; }
 
         [DsIgnore] public string IgnoreThis { get; set; } = "ignore";
         [DsIgnore] public string IgnoreThisToo = "ignore";

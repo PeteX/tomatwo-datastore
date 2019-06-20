@@ -59,6 +59,25 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             return docRef.Id;
         }
 
+        public async Task<IDictionary<string, object>> Get(Collection collection, string id)
+        {
+            var docRef = firestoreDb.Collection(collName(collection.Name)).Document(id);
+            DocumentSnapshot result;
+
+            if(Transaction == null)
+            {
+                Console.WriteLine("Non-transactional get.");
+                result = await docRef.GetSnapshotAsync();
+            }
+            else
+            {
+                Console.WriteLine("Transactional get.");
+                result = await Transaction.GetSnapshotAsync(docRef);
+            }
+
+            return result.ToDictionary();
+        }
+
         public async Task RunTransactionBlock(DataStore dataStore, Func<Task> block)
         {
             await firestoreDb.RunTransactionAsync(async transaction =>

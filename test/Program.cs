@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Tomatwo.DataStore;
 using Tomatwo.DataStore.StorageServices.Firestore;
 
@@ -25,7 +26,8 @@ namespace DataStoreTest
                 var gates = new Account {
                     Name = "Bill Gates",
                     Gender = "Male",
-                    YearOfBirth = 1955
+                    YearOfBirth = 1955,
+                    FavouriteNumber = 65536
                 };
 
                 id = await accounts.Add(gates);
@@ -37,11 +39,15 @@ namespace DataStoreTest
             var may = new Account {
                 Name = "Theresa May",
                 Gender = "Female",
-                YearOfBirth = 1956
+                YearOfBirth = 1956,
+                FavouriteNumber = 10
             };
 
             await accounts.Add(may);
             Console.WriteLine($"Non-transactional add document, ID now {may.Id}.");
+
+            var result = await accounts.Get(id);
+            Console.WriteLine(JsonConvert.SerializeObject(result, Formatting.Indented));
         }
     }
 }
