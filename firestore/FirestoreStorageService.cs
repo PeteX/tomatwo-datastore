@@ -81,6 +81,22 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             return result.ToDictionary();
         }
 
+        public async Task Delete(Collection collection, string id)
+        {
+            var docRef = firestoreDb.Collection(collName(collection.Name)).Document(id);
+
+            if (Transaction == null)
+            {
+                Console.WriteLine("Non-transactional delete.");
+                await docRef.DeleteAsync();
+            }
+            else
+            {
+                Console.WriteLine("Transactional delete.");
+                Transaction.Delete(docRef);
+            }
+        }
+
         public async Task<List<IDictionary<string, object>>> Query(Collection collection,
             IReadOnlyList<Restriction> restrictions, int limit)
         {

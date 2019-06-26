@@ -8,6 +8,28 @@ namespace DataStoreTest
 {
     class Program
     {
+        private static DataStore ds;
+        private static Collection<Account> accounts;
+
+        private static async Task clearExisting()
+        {
+            var first = await accounts.QueryFirstOrDefault(x => true);
+            if (first != null)
+            {
+                Console.WriteLine($"Deleting {first.Id}.");
+                await accounts.Delete(first.Id);
+            }
+
+            await ds.Transaction(async () =>
+            {
+                var existing = await accounts.QueryList(x => true);
+                foreach (var doc in existing)
+                {
+                    await accounts.Delete(doc.Id);
+                }
+            });
+        }
+
         static async Task Main(string[] args)
         {
             IStorageService storageService = new FirestoreStorageService(new FirestoreStorageOptions
@@ -17,11 +39,13 @@ namespace DataStoreTest
                 Prefix = "datastore"
             });
 
-            DataStore ds = new DataStore(storageService);
+            ds = new DataStore(storageService);
             ds.AddCollection<Account>("account");
 
-            Collection<Account> accounts = ds.GetCollection<Account>();
+            accounts = ds.GetCollection<Account>();
             string id = null;
+
+            await clearExisting();
 
             await ds.Transaction(async () =>
             {

@@ -98,6 +98,8 @@ namespace Tomatwo.DataStore
             return result;
         }
 
+        public Task Delete(string id) => DataStore.StorageService.Delete(this, id);
+
         public Task<T> QueryFirst(Expression<Func<T, bool>> select) => Query(select).GetFirst();
         public Task<T> QueryFirstOrDefault(Expression<Func<T, bool>> select) => Query(select).GetFirstOrDefault();
         public Task<T> QuerySingle(Expression<Func<T, bool>> select) => Query(select).GetSingle();
