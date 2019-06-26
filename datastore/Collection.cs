@@ -18,14 +18,16 @@ namespace Tomatwo.DataStore
 
     public class Collection<T> : Collection where T : new()
     {
-        private DataStore dataStore;
+        public DataStore DataStore { get; private set; }
+
         private Dictionary<string, Func<T, object>> getters = new Dictionary<string, Func<T, object>>();
         private Dictionary<string, Action<T, object>> setters = new Dictionary<string, Action<T, object>>();
 
         internal Collection(DataStore dataStore, string name) : base(name)
         {
-            this.dataStore = dataStore;
-            MethodInfo changeType = typeof(Convert).GetMethod("ChangeType", new Type[] { typeof(object), typeof(Type)});
+            this.DataStore = dataStore;
+            MethodInfo changeType =
+                typeof(Convert).GetMethod("ChangeType", new Type[] { typeof(object), typeof(Type) });
 
             foreach (PropertyInfo prop in typeof(T).GetProperties())
             {
@@ -72,16 +74,14 @@ namespace Tomatwo.DataStore
                 data[name] = getter(document);
             }
 
-            string id = await dataStore.StorageService.Add(this, data);
+            string id = await DataStore.StorageService.Add(this, data);
             this.setters["Id"](document, id);
             return id;
         }
 
-        public async Task<T> Get(string id)
+        internal T MakeObject(IDictionary<string, object> data)
         {
             T result = new T();
-            var data = await dataStore.StorageService.Get(this, id);
-            setters["Id"](result, id);
             foreach ((string name, object value) in data)
             {
                 setters[name](result, value);
@@ -89,5 +89,20 @@ namespace Tomatwo.DataStore
 
             return result;
         }
+
+        public async Task<T> Get(string id)
+        {
+            var data = await DataStore.StorageService.Get(this, id);
+            var result = MakeObject(data);
+            setters["Id"](result, id);
+            return result;
+        }
+
+        public Task<T> QueryFirst(Expression<Func<T, bool>> select) => Query(select).GetFirst();
+        public Task<T> QueryFirstOrDefault(Expression<Func<T, bool>> select) => Query(select).GetFirstOrDefault();
+        public Task<T> QuerySingle(Expression<Func<T, bool>> select) => Query(select).GetSingle();
+        public Task<T> QuerySingleOrDefault(Expression<Func<T, bool>> select) => Query(select).GetSingleOrDefault();
+        public Task<List<T>> QueryList(Expression<Func<T, bool>> select) => Query(select).GetList();
+        public Query<T> Query(Expression<Func<T, bool>> select) => new Query<T>(this, select);
     }
 }

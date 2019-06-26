@@ -20,7 +20,7 @@ namespace Tomatwo.DataStore
             collections[typeof(T)] = new Collection<T>(this, name);
         }
 
-        public Collection<T> GetCollection<T>() where T : new() => (Collection<T>) collections[typeof(T)];
+        public Collection<T> GetCollection<T>() where T : new() => (Collection<T>)collections[typeof(T)];
 
         public async Task Transaction(Func<Task> block)
         {

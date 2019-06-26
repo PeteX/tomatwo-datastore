@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Apis.Auth.OAuth2;
@@ -13,7 +15,8 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
 {
     public class FirestoreStorageService : IStorageService
     {
-        public Transaction Transaction {
+        public Transaction Transaction
+        {
             get => _Transaction.Value;
             private set => _Transaction.Value = value;
         }
@@ -28,7 +31,7 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             this.options = options;
 
             Channel channel = null;
-            if(File.Exists(options.CredentialFile))
+            if (File.Exists(options.CredentialFile))
             {
                 GoogleCredential credential = GoogleCredential.FromFile(options.CredentialFile);
                 channel = new Channel(FirestoreClient.DefaultEndpoint.Host, FirestoreClient.DefaultEndpoint.Port,
@@ -42,10 +45,10 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
         public async Task<string> Add(Collection collection, IDictionary<string, object> data)
         {
             var collRef = firestoreDb.Collection(collName(collection.Name));
-            var docRef = data.ContainsKey("Id") && data["Id"] != null ? collRef.Document((string) data["Id"]) : collRef.Document();
+            var docRef = data.ContainsKey("Id") && data["Id"] != null ? collRef.Document((string)data["Id"]) : collRef.Document();
             data.Remove("Id");//FIXME make Id configurable
 
-            if(Transaction == null)
+            if (Transaction == null)
             {
                 Console.WriteLine("Non-transactional set.");
                 await docRef.SetAsync(data);
@@ -64,7 +67,7 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             var docRef = firestoreDb.Collection(collName(collection.Name)).Document(id);
             DocumentSnapshot result;
 
-            if(Transaction == null)
+            if (Transaction == null)
             {
                 Console.WriteLine("Non-transactional get.");
                 result = await docRef.GetSnapshotAsync();
@@ -76,6 +79,53 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             }
 
             return result.ToDictionary();
+        }
+
+        public async Task<List<IDictionary<string, object>>> Query(Collection collection,
+            IReadOnlyList<Restriction> restrictions, int limit)
+        {
+            var collRef = firestoreDb.Collection(collName(collection.Name));
+            Query query = collRef;
+
+            foreach (var restriction in restrictions)
+            {
+                query = restriction.Operator switch
+                {
+                    ExpressionType.LessThan =>
+                        query.WhereLessThan(restriction.FieldName, restriction.Value),
+                    ExpressionType.LessThanOrEqual =>
+                        query.WhereLessThanOrEqualTo(restriction.FieldName, restriction.Value),
+                    ExpressionType.Equal =>
+                        query.WhereEqualTo(restriction.FieldName, restriction.Value),
+                    ExpressionType.GreaterThanOrEqual =>
+                        query.WhereGreaterThanOrEqualTo(restriction.FieldName, restriction.Value),
+                    ExpressionType.GreaterThan =>
+                        query.WhereGreaterThan(restriction.FieldName, restriction.Value),
+                    _ => throw new InvalidOperationException("Unknown query operator.")
+                };
+            }
+
+            if (limit != 0)
+                query = query.Limit(limit);
+
+            QuerySnapshot snapshot;
+            if (Transaction == null)
+            {
+                Console.WriteLine("Non-transactional query.");
+                snapshot = await query.GetSnapshotAsync();
+            }
+            else
+            {
+                Console.WriteLine("Transactional query.");
+                snapshot = await Transaction.GetSnapshotAsync(query);
+            }
+
+            return snapshot.Select(doc =>
+            {
+                IDictionary<string, object> result = doc.ToDictionary();
+                result["Id"] = doc.Id;
+                return result;
+            }).ToList();
         }
 
         public async Task RunTransactionBlock(DataStore dataStore, Func<Task> block)
