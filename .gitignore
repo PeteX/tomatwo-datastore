@@ -1,4 +1,8 @@
-/bin/
-/obj/
+/core/bin/
+/core/obj/
+/firestore/bin/
+/firestore/obj/
+/test/bin/
+/test/obj/
 
 /googleKeyfile.json

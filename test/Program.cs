@@ -34,7 +34,7 @@ namespace DataStoreTest
         {
             IStorageService storageService = new FirestoreStorageService(new FirestoreStorageOptions
             {
-                CredentialFile = "googleKeyfile.json",
+                CredentialFile = "../googleKeyfile.json",
                 Prefix = "datastore"
             });
 
