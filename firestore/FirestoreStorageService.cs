@@ -10,6 +10,7 @@ using Google.Cloud.Firestore;
 using Google.Cloud.Firestore.V1;
 using Grpc.Auth;
 using Grpc.Core;
+using Newtonsoft.Json;
 
 namespace Tomatwo.DataStore.StorageServices.Firestore
 {
@@ -31,15 +32,19 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             this.options = options;
 
             Channel channel = null;
+            string project = null;
             if (File.Exists(options.CredentialFile))
             {
                 GoogleCredential credential = GoogleCredential.FromFile(options.CredentialFile);
                 channel = new Channel(FirestoreClient.DefaultEndpoint.Host, FirestoreClient.DefaultEndpoint.Port,
                     credential.ToChannelCredentials());
+
+                project = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                    File.ReadAllText(options.CredentialFile))["project_id"];
             }
 
             FirestoreClient fc = FirestoreClient.Create(channel);
-            firestoreDb = FirestoreDb.Create(options.Project, fc);
+            firestoreDb = FirestoreDb.Create(project, fc);
         }
 
         public async Task<string> Add(Collection collection, IDictionary<string, object> data)
