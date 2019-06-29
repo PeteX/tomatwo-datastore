@@ -1,0 +1,44 @@
+[
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1982,
+    "Name": "Thomas Williams",
+    "FavouriteNumber": 9
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1971,
+    "Name": "Joshua Taylor",
+    "FavouriteNumber": 5
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1990,
+    "Name": "James Brown",
+    "FavouriteNumber": 7
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1978,
+    "Name": "Jack Smith",
+    "FavouriteNumber": 9
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1965,
+    "Name": "Daniel Jones",
+    "FavouriteNumber": 2
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1955,
+    "Name": "Bill Gates",
+    "FavouriteNumber": 65536
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1955,
+    "Name": "Bill Doors",
+    "FavouriteNumber": 10
+  }
+]

@@ -1,0 +1,80 @@
+[
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1965,
+    "Name": "Daniel Jones",
+    "FavouriteNumber": 2
+  },
+  {
+    "Gender": "Female",
+    "YearOfBirth": 1965,
+    "Name": "Emily Thomas",
+    "FavouriteNumber": 3
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1971,
+    "Name": "Joshua Taylor",
+    "FavouriteNumber": 5
+  },
+  {
+    "Gender": "Female",
+    "YearOfBirth": 1987,
+    "Name": "Jessica Evans",
+    "FavouriteNumber": 6
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1990,
+    "Name": "James Brown",
+    "FavouriteNumber": 7
+  },
+  {
+    "Gender": "Female",
+    "YearOfBirth": 1993,
+    "Name": "Sophie Davies",
+    "FavouriteNumber": 8
+  },
+  {
+    "Gender": "Female",
+    "YearOfBirth": 1995,
+    "Name": "Chloe Wilson",
+    "FavouriteNumber": 9
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1978,
+    "Name": "Jack Smith",
+    "FavouriteNumber": 9
+  },
+  {
+    "Gender": "Female",
+    "YearOfBirth": 1963,
+    "Name": "Lauren Johnson",
+    "FavouriteNumber": 9
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1982,
+    "Name": "Thomas Williams",
+    "FavouriteNumber": 9
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1955,
+    "Name": "Bill Doors",
+    "FavouriteNumber": 10
+  },
+  {
+    "Gender": "Female",
+    "YearOfBirth": 1956,
+    "Name": "Theresa May",
+    "FavouriteNumber": 10
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1955,
+    "Name": "Bill Gates",
+    "FavouriteNumber": 65536
+  }
+]
