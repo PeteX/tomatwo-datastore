@@ -67,6 +67,86 @@ namespace DataStoreTest
                     YearOfBirth = 1955,
                     FavouriteNumber = 10
                 });
+
+                await accounts.Add(new Account
+                {
+                    Name = "Jack Smith",
+                    Gender = "Male",
+                    YearOfBirth = 1978,
+                    FavouriteNumber = 729
+                });
+
+                await accounts.Add(new Account
+                {
+                    Name = "Daniel Jones",
+                    Gender = "Male",
+                    YearOfBirth = 1965,
+                    FavouriteNumber = 382
+                });
+
+                await accounts.Add(new Account
+                {
+                    Name = "Thomas Williams",
+                    Gender = "Male",
+                    YearOfBirth = 1982,
+                    FavouriteNumber = 699
+                });
+
+                await accounts.Add(new Account
+                {
+                    Name = "James Brown",
+                    Gender = "Male",
+                    YearOfBirth = 1990,
+                    FavouriteNumber = 797
+                });
+
+                await accounts.Add(new Account
+                {
+                    Name = "Joshua Taylor",
+                    Gender = "Male",
+                    YearOfBirth = 1971,
+                    FavouriteNumber = 295
+                });
+
+                await accounts.Add(new Account
+                {
+                    Name = "Sophie Davies",
+                    Gender = "Female",
+                    YearOfBirth = 1993,
+                    FavouriteNumber = 238
+                });
+
+                await accounts.Add(new Account
+                {
+                    Name = "Chloe Wilson",
+                    Gender = "Female",
+                    YearOfBirth = 1995,
+                    FavouriteNumber = 649
+                });
+
+                await accounts.Add(new Account
+                {
+                    Name = "Jessica Evans",
+                    Gender = "Female",
+                    YearOfBirth = 1987,
+                    FavouriteNumber = 546
+                });
+
+                await accounts.Add(new Account
+                {
+                    Name = "Emily Thomas",
+                    Gender = "Female",
+                    YearOfBirth = 1965,
+                    FavouriteNumber = 523
+                });
+
+                await accounts.Add(new Account
+                {
+                    Name = "Lauren Johnson",
+                    Gender = "Female",
+                    YearOfBirth = 1963,
+                    FavouriteNumber = 579
+                });
             });
 
             Console.WriteLine($"Added document with ID {id}.");
