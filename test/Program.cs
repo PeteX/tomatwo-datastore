@@ -73,7 +73,7 @@ namespace DataStoreTest
                     Name = "Jack Smith",
                     Gender = "Male",
                     YearOfBirth = 1978,
-                    FavouriteNumber = 729
+                    FavouriteNumber = 9
                 });
 
                 await accounts.Add(new Account
@@ -81,7 +81,7 @@ namespace DataStoreTest
                     Name = "Daniel Jones",
                     Gender = "Male",
                     YearOfBirth = 1965,
-                    FavouriteNumber = 382
+                    FavouriteNumber = 2
                 });
 
                 await accounts.Add(new Account
@@ -89,7 +89,7 @@ namespace DataStoreTest
                     Name = "Thomas Williams",
                     Gender = "Male",
                     YearOfBirth = 1982,
-                    FavouriteNumber = 699
+                    FavouriteNumber = 9
                 });
 
                 await accounts.Add(new Account
@@ -97,7 +97,7 @@ namespace DataStoreTest
                     Name = "James Brown",
                     Gender = "Male",
                     YearOfBirth = 1990,
-                    FavouriteNumber = 797
+                    FavouriteNumber = 7
                 });
 
                 await accounts.Add(new Account
@@ -105,7 +105,7 @@ namespace DataStoreTest
                     Name = "Joshua Taylor",
                     Gender = "Male",
                     YearOfBirth = 1971,
-                    FavouriteNumber = 295
+                    FavouriteNumber = 5
                 });
 
                 await accounts.Add(new Account
@@ -113,7 +113,7 @@ namespace DataStoreTest
                     Name = "Sophie Davies",
                     Gender = "Female",
                     YearOfBirth = 1993,
-                    FavouriteNumber = 238
+                    FavouriteNumber = 8
                 });
 
                 await accounts.Add(new Account
@@ -121,7 +121,7 @@ namespace DataStoreTest
                     Name = "Chloe Wilson",
                     Gender = "Female",
                     YearOfBirth = 1995,
-                    FavouriteNumber = 649
+                    FavouriteNumber = 9
                 });
 
                 await accounts.Add(new Account
@@ -129,7 +129,7 @@ namespace DataStoreTest
                     Name = "Jessica Evans",
                     Gender = "Female",
                     YearOfBirth = 1987,
-                    FavouriteNumber = 546
+                    FavouriteNumber = 6
                 });
 
                 await accounts.Add(new Account
@@ -137,7 +137,7 @@ namespace DataStoreTest
                     Name = "Emily Thomas",
                     Gender = "Female",
                     YearOfBirth = 1965,
-                    FavouriteNumber = 523
+                    FavouriteNumber = 3
                 });
 
                 await accounts.Add(new Account
@@ -145,7 +145,7 @@ namespace DataStoreTest
                     Name = "Lauren Johnson",
                     Gender = "Female",
                     YearOfBirth = 1963,
-                    FavouriteNumber = 579
+                    FavouriteNumber = 9
                 });
             });
 
@@ -167,10 +167,24 @@ namespace DataStoreTest
 
             var results = await accounts.Query(x => true).GetList();
             Console.WriteLine("all documents\n{0}", JsonConvert.SerializeObject(results, Formatting.Indented));
+
             results = await accounts.QueryList(x => x.YearOfBirth == 1955);
             Console.WriteLine("born in 1955\n{0}", JsonConvert.SerializeObject(results, Formatting.Indented));
+
             results = await accounts.QueryList(x => x.YearOfBirth < 1956 && x.FavouriteNumber == 9 + 1);
             Console.WriteLine("born in 1955/fav nr 10\n{0}", JsonConvert.SerializeObject(results, Formatting.Indented));
+
+            results = await accounts.Query(x => x.Gender == "Female").OrderBy(x => x.YearOfBirth).GetList();
+            Console.WriteLine("women by year of birth\n{0}", JsonConvert.SerializeObject(results, Formatting.Indented));
+
+            results = await accounts.Query(x => x.Gender == "Male").OrderByDescending(x => x.Name).GetList();
+            Console.WriteLine("men by name desc\n{0}", JsonConvert.SerializeObject(results, Formatting.Indented));
+
+            results = await accounts.Query(x => true).OrderBy(x => x.FavouriteNumber).OrderBy(x => x.Name).GetList();
+            Console.WriteLine("all by number, name\n{0}", JsonConvert.SerializeObject(results, Formatting.Indented));
+
+            results = await accounts.Query(x => true).OrderBy(x => x.Name).Limit(2).GetList();
+            Console.WriteLine("first two by name\n{0}", JsonConvert.SerializeObject(results, Formatting.Indented));
         }
     }
 }

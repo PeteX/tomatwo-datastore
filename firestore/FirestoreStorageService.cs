@@ -97,8 +97,11 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             }
         }
 
-        public async Task<List<IDictionary<string, object>>> Query(Collection collection,
-            IReadOnlyList<Restriction> restrictions, int limit)
+        public async Task<List<IDictionary<string, object>>> Query(
+            Collection collection,
+            IReadOnlyList<Restriction> restrictions,
+            IReadOnlyList<SortKey> sortKeys,
+            int limit)
         {
             var collRef = firestoreDb.Collection(collName(collection.Name));
             Query query = collRef;
@@ -119,6 +122,18 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
                         query.WhereGreaterThan(restriction.FieldName, restriction.Value),
                     _ => throw new InvalidOperationException("Unknown query operator.")
                 };
+            }
+
+            foreach (SortKey key in sortKeys)
+            {
+                if (key.Ascending)
+                {
+                    query = query.OrderBy(key.FieldName);
+                }
+                else
+                {
+                    query = query.OrderByDescending(key.FieldName);
+                }
             }
 
             if (limit != 0)

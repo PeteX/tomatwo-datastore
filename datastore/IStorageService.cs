@@ -10,7 +10,10 @@ namespace Tomatwo.DataStore
         Task<string> Add(Collection collection, IDictionary<string, object> data);
         Task<IDictionary<string, object>> Get(Collection collection, string id);
         Task Delete(Collection collection, string id);
-        Task<List<IDictionary<string, object>>> Query(Collection collection, IReadOnlyList<Restriction> restrictions,
+        Task<List<IDictionary<string, object>>> Query(
+            Collection collection,
+            IReadOnlyList<Restriction> restrictions,
+            IReadOnlyList<SortKey> sortKeys,
             int limit);
     }
 }

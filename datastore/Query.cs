@@ -11,6 +11,7 @@ namespace Tomatwo.DataStore
         public Collection<T> Collection { get; private set; }
 
         private List<Restriction> restrictions = new List<Restriction>();
+        private List<SortKey> sortKeys = new List<SortKey>();
         private int limit = 0;
 
         public Query(Collection<T> collection, Expression<Func<T, bool>> select)
@@ -64,6 +65,23 @@ namespace Tomatwo.DataStore
             }
         }
 
+        private string selectField(Expression<Func<T, object>> exp)
+        {
+            const string error = "Field selection lambda must be of the form x => x.MemberName.";
+
+            MemberExpression member = exp.Body switch
+            {
+                UnaryExpression convert => convert.Operand as MemberExpression,
+                MemberExpression m => m,
+                _ => throw new InvalidOperationException(error)
+            };
+
+            if (member == null)
+                throw new InvalidOperationException(error);
+
+            return member.Member.Name;
+        }
+
         public Query<T> Limit(int limit)
         {
             if (limit < 1)
@@ -76,6 +94,18 @@ namespace Tomatwo.DataStore
             return this;
         }
 
+        public Query<T> OrderBy(Expression<Func<T, object>> exp)
+        {
+            sortKeys.Add(new SortKey { FieldName = selectField(exp), Ascending = true });
+            return this;
+        }
+
+        public Query<T> OrderByDescending(Expression<Func<T, object>> exp)
+        {
+            sortKeys.Add(new SortKey { FieldName = selectField(exp), Ascending = false });
+            return this;
+        }
+
         public async Task<T> GetFirst() => (await Limit(2).GetList()).First();
         public async Task<T> GetFirstOrDefault() => (await Limit(2).GetList()).FirstOrDefault();
         public async Task<T> GetSingle() => (await Limit(2).GetList()).Single();
@@ -83,7 +113,7 @@ namespace Tomatwo.DataStore
 
         public async Task<List<T>> GetList()
         {
-            var results = await Collection.DataStore.StorageService.Query(Collection, restrictions, limit);
+            var results = await Collection.DataStore.StorageService.Query(Collection, restrictions, sortKeys, limit);
             return results.Select(doc => Collection.MakeObject(doc)).ToList();
         }
     }
