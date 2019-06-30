@@ -6,9 +6,21 @@ using System.Reflection;
 
 namespace Tomatwo.DataStore
 {
+    // The ObjectSerialiser converts between POCOs and nested IDictionaries and ILists.  It emits code to do the
+    // conversion at setup time, rather than using reflection at the time when the database is accessed.  This increases
+    // efficiency at the cost of higher complexity.
+
     internal abstract class ObjectSerialiser
     {
         private static Dictionary<Type, ObjectSerialiser> serialisers = new Dictionary<Type, ObjectSerialiser>();
+
+        // Get a new ObjectSerialiser.  Creating an ObjectSerialiser for a type will also cause ObjectSerialisers to be
+        // created for any child types.  To protect against loops, a distinction is drawn between there being no cached
+        // serialiser (in which case it must be created) and the cached serialiser being null.  If it is null, the
+        // serialiser is in the process of being created, so attempting to retrieve it indicates a loop.
+        //
+        // It is helpful to have the serialiser parameterised on the type being serialised.  Unfortunately this means it
+        // must be created using reflection, because sometimes the desired parameter type is not known at compile time.
 
         internal static ObjectSerialiser GetSerialiser(Type type)
         {
@@ -37,8 +49,18 @@ namespace Tomatwo.DataStore
 
     internal class ObjectSerialiser<T> : ObjectSerialiser where T : new()
     {
+        // Serialisation and deserialisation are similar in some respects.  To avoid confusion, the code uses "get" for
+        // things that relate to serialisation, and "set" for things that relate to deserialisation.  This is because
+        // serialisation involves T's getters, and deserialisation the setters.
+
         private Dictionary<string, Func<T, object>> getters = new Dictionary<string, Func<T, object>>();
         private Dictionary<string, Action<T, object>> setters = new Dictionary<string, Action<T, object>>();
+
+        // These static methods are used to serialise and deserialise various collection types.  This is involved enough
+        // that it is difficult to express directly using System.Linq.Expressions.  Because they handle collections,
+        // they are parameterised on the type contained in the collection.  (Some are also parameterised on the
+        // collection type itself).  The specialisation is done using reflection, because the types are not known at
+        // compile time.
 
         private static IList<object> listTypeGetter<TInner>(object input, Func<object, object> innerSerialiser)
         {
@@ -134,6 +156,15 @@ namespace Tomatwo.DataStore
             return result;
         }
 
+        // The getConverter is an Expression that serialises a particular member.  For atomic types it is trivial but
+        // arrays, lists, dictionaries and child objects are all more complex.  The function is directly recursive when
+        // handling collections, because it needs to serialise not just the collection but the members too.  The
+        // function is indirectly recursive when handling child objects; it allocates a new ObjectSerialiser and this
+        // will call getConverter in due course.
+        //
+        // Essentially the collections work by specialising the appropriate xxxTypeGetter method, then calling it with a
+        // getConverter that is capable of handling the contained objects.
+
         private Expression getConverter(Expression value)
         {
             if (value.Type.IsArray)
@@ -190,6 +221,8 @@ namespace Tomatwo.DataStore
                 return Expression.Convert(value, typeof(object));
             }
         }
+
+        // The setConverter is the opposite of getConverter, deserialising one member in much the same way.
 
         private Expression setConverter(Expression value, Type memberType)
         {
@@ -257,6 +290,9 @@ namespace Tomatwo.DataStore
             }
         }
 
+        // When an ObjectSerialiser is created, the constructor iterates through the public properties and fields.  It
+        // creates lambda expressions to serialise and deserialise each of them.
+
         internal ObjectSerialiser()
         {
             foreach (MemberInfo member in typeof(T).GetMembers())
@@ -283,6 +319,8 @@ namespace Tomatwo.DataStore
                 }
             }
         }
+
+        // Serialise and Deserialise use the functions created above to serialise and deserialise a whole object.
 
         internal override IDictionary<string, object> Serialise(object input)
         {
@@ -314,6 +352,8 @@ namespace Tomatwo.DataStore
 
             return result;
         }
+
+        // SetMember is used for setting the Id field, for example after adding a new record.
 
         internal override void SetMember(object obj, string member, object value) => setters[member]((T)obj, value);
     }

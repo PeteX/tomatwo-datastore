@@ -175,7 +175,7 @@ namespace DataStoreTest
         {
             await test(new Contact
             {
-                Name = "Zoe Burrows",
+                Name = "Christopher Doyle",
                 ChildrenArray = new Contact.Child[]
                 {
                     new Contact.Child { Name = "Sophia", Age = 4 },
