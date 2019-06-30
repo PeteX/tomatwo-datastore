@@ -26,5 +26,8 @@ namespace DataStoreTest
         public Child FirstChild;
         public List<Child> Children;
         public SortedDictionary<string, Status> DailyStatus;
+
+        // Note that Firestore doesn't support lists of lists.
+        public SortedDictionary<string, SortedDictionary<string, string>> DailyAttributes;
     }
 }

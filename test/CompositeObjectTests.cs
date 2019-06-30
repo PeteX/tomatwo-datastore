@@ -121,5 +121,33 @@ namespace DataStoreTest
                 }
             });
         }
+
+        [Test]
+        public async Task TestNestedDictionary()
+        {
+            await test(new Contact
+            {
+                Name = "Grace Wallace",
+                DailyAttributes = new SortedDictionary<string, SortedDictionary<string, string>>
+                {
+                    {
+                        "Thursday",
+                        new SortedDictionary<string, string>
+                        {
+                            { "PersonMet", "Lily" },
+                            { "Liked", "Yes" }
+                        }
+                    },
+                    {
+                        "Friday",
+                        new SortedDictionary<string, string>
+                        {
+                            { "PersonMet", "Joe" },
+                            { "Liked", "No" }
+                        }
+                    }
+                }
+            });
+        }
     }
 }
