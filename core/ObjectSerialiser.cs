@@ -40,7 +40,23 @@ namespace Tomatwo.DataStore
         private Dictionary<string, Func<T, object>> getters = new Dictionary<string, Func<T, object>>();
         private Dictionary<string, Action<T, object>> setters = new Dictionary<string, Action<T, object>>();
 
-        private static TOuter makeListType<TOuter, TInner>(object input) where TOuter : IList<TInner>, new()
+        private static IList<object> listTypeGetter<TInner>(object input, Func<object, object> innerSerialiser)
+        {
+            if (input == null)
+                return null;
+
+            IList<object> result = new List<object>();
+
+            foreach (object obj in (IList<TInner>)input)
+            {
+                result.Add(innerSerialiser(obj));
+            }
+
+            return result;
+        }
+
+        private static TOuter listTypeSetter<TOuter, TInner>(object input, Func<object, object> innerDeserialiser)
+            where TOuter : IList<TInner>, new()
         {
             if (input == null)
                 return default(TOuter);
@@ -49,7 +65,7 @@ namespace Tomatwo.DataStore
 
             foreach (object obj in (IList<object>)input)
             {
-                result.Add((TInner)Convert.ChangeType(obj, typeof(TInner)));
+                result.Add((TInner)innerDeserialiser(obj));
             }
 
             return result;
@@ -63,9 +79,14 @@ namespace Tomatwo.DataStore
             if (memberType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>)))
             {
                 Type listContent = memberType.GetGenericArguments()[0];
-                MethodInfo method = GetType().GetMethod("makeListType", BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo method = GetType().GetMethod("listTypeSetter", BindingFlags.NonPublic | BindingFlags.Static);
                 MethodInfo specialised = method.MakeGenericMethod(memberType, listContent);
-                return Expression.Call(null, specialised, value);
+
+                var arg = Expression.Parameter(typeof(object));
+                var innerDeserialiser = (Func<object, object>)
+                    Expression.Lambda(setConverter(arg, listContent), arg).Compile();
+                var innerDeserialiserExpr = Expression.Constant(innerDeserialiser);
+                return Expression.Call(null, specialised, value, innerDeserialiserExpr);
             }
             else if (memberType.GetInterfaces().Any(x => x.IsGenericType &&
                 x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
@@ -97,7 +118,15 @@ namespace Tomatwo.DataStore
         {
             if (value.Type.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>)))
             {
-                return Expression.Convert(value, typeof(object));
+                Type listContent = value.Type.GetGenericArguments()[0];
+                MethodInfo method = GetType().GetMethod("listTypeGetter", BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo specialised = method.MakeGenericMethod(listContent);
+
+                var arg = Expression.Parameter(typeof(object));
+                var typedArg = Expression.Convert(arg, listContent);
+                var innerSerialiser = (Func<object, object>)Expression.Lambda(getConverter(typedArg), arg).Compile();
+                var innerSerialiserExpr = Expression.Constant(innerSerialiser);
+                return Expression.Call(null, specialised, value, innerSerialiserExpr);
             }
             else if (value.Type.GetInterfaces().Any(x => x.IsGenericType &&
                 x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))

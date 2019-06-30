@@ -41,7 +41,7 @@ namespace DataStoreTest
         {
             await test(new Contact
             {
-                Name = "Luke Marsh",
+                Name = "Joe Hooper",
                 PetsNames = new List<string> { "Snuffles", "Spot" }
             });
         }
@@ -53,6 +53,20 @@ namespace DataStoreTest
             {
                 Name = "Ben Sutton",
                 FirstChild = new Contact.Child { Name = "Emma", Age = 12 }
+            });
+        }
+
+        [Test]
+        public async Task TestChildObjectList()
+        {
+            await test(new Contact
+            {
+                Name = "Zoe Burrows",
+                Children = new List<Contact.Child>
+                {
+                    new Contact.Child { Name = "Rebecca", Age = 7 },
+                    new Contact.Child { Name = "Dylan", Age = 11 }
+                }
             });
         }
     }
