@@ -149,5 +149,39 @@ namespace DataStoreTest
                 }
             });
         }
+
+        [Test]
+        public async Task TestArrayOfInt()
+        {
+            await test(new Contact
+            {
+                Name = "Olivia Wallace",
+                FavouriteNumbersArray = new int[] { 1, 4, 6, 8 }
+            });
+        }
+
+        [Test]
+        public async Task TestArrayOfString()
+        {
+            await test(new Contact
+            {
+                Name = "Kieran Cook",
+                PetsNamesArray = new string[] { "Button", "Cleopatra" }
+            });
+        }
+
+        [Test]
+        public async Task TestChildObjectArray()
+        {
+            await test(new Contact
+            {
+                Name = "Zoe Burrows",
+                ChildrenArray = new Contact.Child[]
+                {
+                    new Contact.Child { Name = "Sophia", Age = 4 },
+                    new Contact.Child { Name = "Max", Age = 8 }
+                }
+            });
+        }
     }
 }

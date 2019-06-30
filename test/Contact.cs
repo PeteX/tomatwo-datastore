@@ -29,5 +29,9 @@ namespace DataStoreTest
 
         // Note that Firestore doesn't support lists of lists.
         public SortedDictionary<string, SortedDictionary<string, string>> DailyAttributes;
+
+        public string[] PetsNamesArray;
+        public int[] FavouriteNumbersArray;
+        public Child[] ChildrenArray;
     }
 }

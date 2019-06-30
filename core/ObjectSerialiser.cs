@@ -71,6 +71,37 @@ namespace Tomatwo.DataStore
             return result;
         }
 
+        private static IList<object> arrayTypeGetter<TInner>(object input, Func<object, object> innerSerialiser)
+        {
+            if (input == null)
+                return null;
+
+            IList<object> result = new List<object>();
+
+            foreach (object obj in (TInner[])input)
+            {
+                result.Add(innerSerialiser(obj));
+            }
+
+            return result;
+        }
+
+        private static TInner[] arrayTypeSetter<TInner>(object input, Func<object, object> innerDeserialiser)
+        {
+            if (input == null)
+                return null;
+
+            IList<object> list = (IList<object>)input;
+            TInner[] result = new TInner[list.Count];
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                result[i] = (TInner)innerDeserialiser(list[i]);
+            }
+
+            return result;
+        }
+
         private static IDictionary<string, object> dictTypeGetter<TInner>(
             object input, Func<object, object> innerSerialiser)
         {
@@ -105,7 +136,21 @@ namespace Tomatwo.DataStore
 
         private Expression getConverter(Expression value)
         {
-            if (value.Type.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>)))
+            if (value.Type.IsArray)
+            {
+                Type arrayContent = value.Type.GetElementType();
+                MethodInfo method =
+                    GetType().GetMethod("arrayTypeGetter", BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo specialised = method.MakeGenericMethod(arrayContent);
+
+                var arg = Expression.Parameter(typeof(object));
+                var typedArg = Expression.Convert(arg, arrayContent);
+                var innerSerialiser = (Func<object, object>)Expression.Lambda(getConverter(typedArg), arg).Compile();
+                var innerSerialiserExpr = Expression.Constant(innerSerialiser);
+                return Expression.Call(null, specialised, value, innerSerialiserExpr);
+            }
+            else if (value.Type.GetInterfaces().Any(x => x.IsGenericType &&
+                x.GetGenericTypeDefinition() == typeof(IList<>)))
             {
                 Type listContent = value.Type.GetGenericArguments()[0];
                 MethodInfo method = GetType().GetMethod("listTypeGetter", BindingFlags.NonPublic | BindingFlags.Static);
@@ -151,7 +196,22 @@ namespace Tomatwo.DataStore
             MethodInfo changeType =
                 typeof(Convert).GetMethod("ChangeType", new Type[] { typeof(object), typeof(Type) });
 
-            if (memberType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>)))
+            if (memberType.IsArray)
+            {
+                Type arrayContent = memberType.GetElementType();
+                MethodInfo method =
+                    GetType().GetMethod("arrayTypeSetter", BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo specialised = method.MakeGenericMethod(arrayContent);
+
+                var arg = Expression.Parameter(typeof(object));
+                var converter = setConverter(arg, arrayContent);
+                converter = Expression.Convert(converter, typeof(object));
+                var innerDeserialiser = (Func<object, object>)Expression.Lambda(converter, arg).Compile();
+                var innerDeserialiserExpr = Expression.Constant(innerDeserialiser);
+                return Expression.Call(null, specialised, value, innerDeserialiserExpr);
+            }
+            else if (memberType.GetInterfaces().Any(x => x.IsGenericType &&
+                x.GetGenericTypeDefinition() == typeof(IList<>)))
             {
                 Type listContent = memberType.GetGenericArguments()[0];
                 MethodInfo method = GetType().GetMethod("listTypeSetter", BindingFlags.NonPublic | BindingFlags.Static);
