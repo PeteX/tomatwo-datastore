@@ -17,12 +17,14 @@ namespace DataStoreTest
             public string Description;
         }
 
+        // Use SortedDictionary so the serialisation is repeatable, which avoids spurious test failures.
         public string Id;
         public string Name;
         public List<string> PetsNames;
-        public Dictionary<string, int> PetsAges;
+        public List<int> FavouriteNumbers;
+        public SortedDictionary<string, int> PetsAges;
         public Child FirstChild;
         public List<Child> Children;
-        public Dictionary<DateTime, Status> DailyStatus;
+        public SortedDictionary<string, Status> DailyStatus;
     }
 }

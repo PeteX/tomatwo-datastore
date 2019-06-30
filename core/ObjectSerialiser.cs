@@ -71,47 +71,36 @@ namespace Tomatwo.DataStore
             return result;
         }
 
-        private Expression setConverter(Expression value, Type memberType)
+        private static IDictionary<string, object> dictTypeGetter<TInner>(
+            object input, Func<object, object> innerSerialiser)
         {
-            MethodInfo changeType =
-                typeof(Convert).GetMethod("ChangeType", new Type[] { typeof(object), typeof(Type) });
+            if (input == null)
+                return null;
 
-            if (memberType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>)))
-            {
-                Type listContent = memberType.GetGenericArguments()[0];
-                MethodInfo method = GetType().GetMethod("listTypeSetter", BindingFlags.NonPublic | BindingFlags.Static);
-                MethodInfo specialised = method.MakeGenericMethod(memberType, listContent);
+            IDictionary<string, object> result = new Dictionary<string, object>();
 
-                var arg = Expression.Parameter(typeof(object));
-                var innerDeserialiser = (Func<object, object>)
-                    Expression.Lambda(setConverter(arg, listContent), arg).Compile();
-                var innerDeserialiserExpr = Expression.Constant(innerDeserialiser);
-                return Expression.Call(null, specialised, value, innerDeserialiserExpr);
-            }
-            else if (memberType.GetInterfaces().Any(x => x.IsGenericType &&
-                x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
+            foreach ((string key, object value) in (IDictionary<string, TInner>)input)
             {
-                // TODO
-                Expression propertyType = Expression.Constant(memberType);
-                value = Expression.Call(changeType, value, propertyType);
-                return Expression.Convert(value, memberType);
+                result[key] = innerSerialiser(value);
             }
-            else if (!memberType.IsValueType && memberType != typeof(string))
+
+            return result;
+        }
+
+        private static TOuter dictTypeSetter<TOuter, TInner>(object input, Func<object, object> innerDeserialiser)
+            where TOuter : IDictionary<string, TInner>, new()
+        {
+            if (input == null)
+                return default(TOuter);
+
+            TOuter result = new TOuter();
+
+            foreach ((string key, object value) in (IDictionary<string, object>)input)
             {
-                ObjectSerialiser child = ObjectSerialiser.GetSerialiser(memberType);
-                Expression childExpr = Expression.Constant(child);
-                MethodInfo deserialise =
-                    child.GetType().GetMethod("Deserialise", BindingFlags.Instance | BindingFlags.NonPublic);
-                value = Expression.Convert(value, typeof(IDictionary<string, object>));
-                value = Expression.Call(childExpr, deserialise, value);
-                return Expression.Convert(value, memberType);
+                result[key] = (TInner)innerDeserialiser(value);
             }
-            else
-            {
-                Expression propertyType = Expression.Constant(memberType);
-                value = Expression.Call(changeType, value, propertyType);
-                return Expression.Convert(value, memberType);
-            }
+
+            return result;
         }
 
         private Expression getConverter(Expression value)
@@ -131,7 +120,15 @@ namespace Tomatwo.DataStore
             else if (value.Type.GetInterfaces().Any(x => x.IsGenericType &&
                 x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
             {
-                return Expression.Convert(value, typeof(object));
+                Type dictValue = value.Type.GetGenericArguments()[1];
+                MethodInfo method = GetType().GetMethod("dictTypeGetter", BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo specialised = method.MakeGenericMethod(dictValue);
+
+                var arg = Expression.Parameter(typeof(object));
+                var typedArg = Expression.Convert(arg, dictValue);
+                var innerSerialiser = (Func<object, object>)Expression.Lambda(getConverter(typedArg), arg).Compile();
+                var innerSerialiserExpr = Expression.Constant(innerSerialiser);
+                return Expression.Call(null, specialised, value, innerSerialiserExpr);
             }
             else if (!value.Type.IsValueType && value.Type != typeof(string))
             {
@@ -146,6 +143,57 @@ namespace Tomatwo.DataStore
             else
             {
                 return Expression.Convert(value, typeof(object));
+            }
+        }
+
+        private Expression setConverter(Expression value, Type memberType)
+        {
+            MethodInfo changeType =
+                typeof(Convert).GetMethod("ChangeType", new Type[] { typeof(object), typeof(Type) });
+
+            if (memberType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>)))
+            {
+                Type listContent = memberType.GetGenericArguments()[0];
+                MethodInfo method = GetType().GetMethod("listTypeSetter", BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo specialised = method.MakeGenericMethod(memberType, listContent);
+
+                var arg = Expression.Parameter(typeof(object));
+                var converter = setConverter(arg, listContent);
+                converter = Expression.Convert(converter, typeof(object));
+                var innerDeserialiser = (Func<object, object>)Expression.Lambda(converter, arg).Compile();
+                var innerDeserialiserExpr = Expression.Constant(innerDeserialiser);
+                return Expression.Call(null, specialised, value, innerDeserialiserExpr);
+            }
+            else if (memberType.GetInterfaces().Any(x => x.IsGenericType &&
+                x.GetGenericTypeDefinition() == typeof(IDictionary<,>)))
+            {
+                // The keys must always be strings, as this is required by JSON.
+                Type dictValue = memberType.GetGenericArguments()[1];
+                MethodInfo method = GetType().GetMethod("dictTypeSetter", BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo specialised = method.MakeGenericMethod(memberType, dictValue);
+
+                var arg = Expression.Parameter(typeof(object));
+                var converter = setConverter(arg, dictValue);
+                converter = Expression.Convert(converter, typeof(object));
+                var innerDeserialiser = (Func<object, object>)Expression.Lambda(converter, arg).Compile();
+                var innerDeserialiserExpr = Expression.Constant(innerDeserialiser);
+                return Expression.Call(null, specialised, value, innerDeserialiserExpr);
+            }
+            else if (!memberType.IsValueType && memberType != typeof(string))
+            {
+                ObjectSerialiser child = ObjectSerialiser.GetSerialiser(memberType);
+                Expression childExpr = Expression.Constant(child);
+                MethodInfo deserialise =
+                    child.GetType().GetMethod("Deserialise", BindingFlags.Instance | BindingFlags.NonPublic);
+                value = Expression.Convert(value, typeof(IDictionary<string, object>));
+                value = Expression.Call(childExpr, deserialise, value);
+                return Expression.Convert(value, memberType);
+            }
+            else
+            {
+                Expression propertyType = Expression.Constant(memberType);
+                value = Expression.Call(changeType, value, propertyType);
+                return Expression.Convert(value, memberType);
             }
         }
 

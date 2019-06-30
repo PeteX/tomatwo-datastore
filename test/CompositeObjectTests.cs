@@ -37,6 +37,16 @@ namespace DataStoreTest
         }
 
         [Test]
+        public async Task TestListOfInt()
+        {
+            await test(new Contact
+            {
+                Name = "Robert Connolly",
+                FavouriteNumbers = new List<int> { 2, 3, 5, 7 }
+            });
+        }
+
+        [Test]
         public async Task TestListOfString()
         {
             await test(new Contact
@@ -66,6 +76,48 @@ namespace DataStoreTest
                 {
                     new Contact.Child { Name = "Rebecca", Age = 7 },
                     new Contact.Child { Name = "Dylan", Age = 11 }
+                }
+            });
+        }
+
+        [Test]
+        public async Task TestDictionaryWithAtomicTypes()
+        {
+            await test(new Contact
+            {
+                Name = "Joe Brooks",
+                PetsAges = new SortedDictionary<string, int>
+                {
+                    { "Tickles", 3 },
+                    { "Biscuit", 7 }
+                }
+            });
+        }
+
+        [Test]
+        public async Task TestDictionaryWithChildObjects()
+        {
+            await test(new Contact
+            {
+                Name = "Lily Finch",
+                DailyStatus = new SortedDictionary<string, Contact.Status>
+                {
+                    {
+                        "Tuesday",
+                        new Contact.Status
+                        {
+                            Happiness = 7,
+                            Description = "Pretty happy today."
+                        }
+                    },
+                    {
+                        "Wednesday",
+                        new Contact.Status
+                        {
+                            Happiness = 5,
+                            Description = "Not so good today."
+                        }
+                    },
                 }
             });
         }
