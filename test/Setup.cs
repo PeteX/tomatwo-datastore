@@ -10,6 +10,7 @@ namespace DataStoreTest
     {
         public static DataStore DataStore;
         public static Collection<Account> Accounts;
+        public static Collection<Contact> Contacts;
         public static string Gates;
 
         private async Task clearExisting()
@@ -154,7 +155,9 @@ namespace DataStoreTest
 
             DataStore = new DataStore(storageService);
             DataStore.AddCollection<Account>("account");
+            DataStore.AddCollection<Contact>("contact");
             Accounts = DataStore.GetCollection<Account>();
+            Contacts = DataStore.GetCollection<Contact>();
             await clearExisting();
             await addTestData();
         }

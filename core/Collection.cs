@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -23,45 +24,66 @@ namespace Tomatwo.DataStore
         private Dictionary<string, Func<T, object>> getters = new Dictionary<string, Func<T, object>>();
         private Dictionary<string, Action<T, object>> setters = new Dictionary<string, Action<T, object>>();
 
-        internal Collection(DataStore dataStore, string name) : base(name)
+        private static TOuter makeListType<TOuter, TInner>(object input) where TOuter : IList<TInner>, new()
         {
-            this.DataStore = dataStore;
+            if (input == null)
+                return default(TOuter);
+
+            TOuter result = new TOuter();
+
+            foreach (object obj in (IList<object>)input)
+            {
+                result.Add((TInner)Convert.ChangeType(obj, typeof(TInner)));
+            }
+
+            return result;
+        }
+
+        private Expression setConverter(Expression value, Type memberType)
+        {
             MethodInfo changeType =
                 typeof(Convert).GetMethod("ChangeType", new Type[] { typeof(object), typeof(Type) });
 
-            foreach (PropertyInfo prop in typeof(T).GetProperties())
+            if (memberType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>)))
             {
-                if (prop.GetCustomAttribute<DsIgnoreAttribute>() == null)
-                {
-                    ParameterExpression obj = Expression.Parameter(typeof(T));
-                    Expression getter = Expression.Call(obj, prop.GetMethod);
-                    Expression box = Expression.Convert(getter, typeof(object));
-                    getters[prop.Name] = Expression.Lambda<Func<T, object>>(box, obj).Compile();
-
-                    ParameterExpression valueObj = Expression.Parameter(typeof(object));
-                    Expression propertyType = Expression.Constant(prop.PropertyType);
-                    Expression value = Expression.Call(changeType, valueObj, propertyType);
-                    value = Expression.Convert(value, prop.PropertyType);
-                    Expression setter = Expression.Call(obj, prop.SetMethod, value);
-                    setters[prop.Name] = Expression.Lambda<Action<T, object>>(setter, obj, valueObj).Compile();
-                }
+                Type listContent = memberType.GetGenericArguments()[0];
+                MethodInfo method = GetType().GetMethod("makeListType", BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo specialised = method.MakeGenericMethod(memberType, listContent);
+                return Expression.Call(null, specialised, value);
             }
-
-            foreach (FieldInfo field in typeof(T).GetFields())
+            else
             {
-                if (field.GetCustomAttribute<DsIgnoreAttribute>() == null)
+                Expression propertyType = Expression.Constant(memberType);
+                value = Expression.Call(changeType, value, propertyType);
+                return Expression.Convert(value, memberType);
+            }
+        }
+
+        internal Collection(DataStore dataStore, string name) : base(name)
+        {
+            this.DataStore = dataStore;
+
+            foreach (MemberInfo member in typeof(T).GetMembers())
+            {
+                PropertyInfo prop = member as PropertyInfo;
+                FieldInfo field = member as FieldInfo;
+
+                if ((prop != null || field != null) && member.GetCustomAttribute<DsIgnoreAttribute>() == null)
                 {
+                    Type memberType = prop != null ? prop.PropertyType : field.FieldType;
                     ParameterExpression obj = Expression.Parameter(typeof(T));
-                    Expression fieldExpr = Expression.Field(obj, field);
-                    Expression box = Expression.Convert(fieldExpr, typeof(object));
-                    getters[field.Name] = Expression.Lambda<Func<T, object>>(box, obj).Compile();
+                    Expression getter = prop != null ?
+                        (Expression)Expression.Call(obj, prop.GetMethod) :
+                        (Expression)Expression.Field(obj, field);
+                    Expression box = Expression.Convert(getter, typeof(object));
+                    getters[member.Name] = Expression.Lambda<Func<T, object>>(box, obj).Compile();
 
                     ParameterExpression valueObj = Expression.Parameter(typeof(object));
-                    Expression fieldType = Expression.Constant(field.FieldType);
-                    Expression value = Expression.Call(changeType, valueObj, fieldType);
-                    value = Expression.Convert(value, field.FieldType);
-                    Expression assign = Expression.Assign(fieldExpr, value);
-                    setters[field.Name] = Expression.Lambda<Action<T, object>>(assign, obj, valueObj).Compile();
+                    Expression value = setConverter(valueObj, memberType);
+                    Expression setter = prop != null ?
+                        (Expression)Expression.Call(obj, prop.SetMethod, value) :
+                        (Expression)Expression.Assign(Expression.Field(obj, field), value);
+                    setters[member.Name] = Expression.Lambda<Action<T, object>>(setter, obj, valueObj).Compile();
                 }
             }
         }
