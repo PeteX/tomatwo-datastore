@@ -45,5 +45,15 @@ namespace DataStoreTest
                 PetsNames = new List<string> { "Snuffles", "Spot" }
             });
         }
+
+        [Test]
+        public async Task TestChildObject()
+        {
+            await test(new Contact
+            {
+                Name = "Ben Sutton",
+                FirstChild = new Contact.Child { Name = "Emma", Age = 12 }
+            });
+        }
     }
 }
