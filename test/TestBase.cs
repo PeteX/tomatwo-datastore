@@ -21,7 +21,6 @@ namespace DataStoreTest
             json = Regex.Replace(json, "^\\s*\"IgnoreThisToo\": *\"ignore\",?$", "", RegexOptions.Multiline);
             json = Regex.Replace(json, "\n+", "\n");
             json = Regex.Replace(json, @",(\s*})", "$1");
-            Console.WriteLine(json);
             return json;
         }
 

@@ -39,9 +39,26 @@ namespace Tomatwo.DataStore
             return id;
         }
 
+        public async Task<string> Set(T document)
+        {
+            var data = serialiser.Serialise(document);
+            if (!data.TryGetValue("Id", out var id) || id == null)
+                throw new InvalidOperationException("The document Id field must be filled in when calling Set.");
+
+            await DataStore.StorageService.Set(this, data);
+            return (string)id;
+        }
+
+        public Task<string> Update(string id, Dictionary<string, object> changes, bool upsert = false) =>
+            DataStore.StorageService.Update(this, id, changes, upsert);
+
         public async Task<T> Get(string id)
         {
             var data = await DataStore.StorageService.Get(this, id);
+
+            if(data == null)
+                return default(T);
+
             var result = (T)serialiser.Deserialise(data);
             serialiser.SetMember(result, "Id", id);
             return result;

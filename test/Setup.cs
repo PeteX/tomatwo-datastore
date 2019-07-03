@@ -18,7 +18,6 @@ namespace DataStoreTest
             var first = await Accounts.QueryFirstOrDefault(x => true);
             if (first != null)
             {
-                System.Console.WriteLine($"Deleting {first.Id}.");
                 await Accounts.Delete(first.Id);
             }
 
