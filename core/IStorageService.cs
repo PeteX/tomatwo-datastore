@@ -16,6 +16,7 @@ namespace Tomatwo.DataStore
             Collection collection,
             IReadOnlyList<Restriction> restrictions,
             IReadOnlyList<SortKey> sortKeys,
-            int limit);
+            int limit,
+            IReadOnlyList<object> startAfter);
     }
 }

@@ -13,6 +13,7 @@ namespace Tomatwo.DataStore
         private List<Restriction> restrictions = new List<Restriction>();
         private List<SortKey> sortKeys = new List<SortKey>();
         private int limit = 0;
+        private List<object> startAfter = new List<object>();
 
         public Query(Collection<T> collection, Expression<Func<T, bool>> select)
         {
@@ -94,6 +95,12 @@ namespace Tomatwo.DataStore
             return this;
         }
 
+        public Query<T> StartAfter(object start)
+        {
+            startAfter.Add(start);
+            return this;
+        }
+
         public Query<T> OrderBy(Expression<Func<T, object>> exp)
         {
             sortKeys.Add(new SortKey { FieldName = selectField(exp), Ascending = true });
@@ -113,8 +120,10 @@ namespace Tomatwo.DataStore
 
         public async Task<List<T>> GetList()
         {
-            var results = await Collection.DataStore.StorageService.Query(Collection, restrictions, sortKeys, limit);
-            return results.Select(doc => Collection.MakeObject(doc)).ToList();
+            var results = await Collection.DataStore.StorageService.Query(Collection, restrictions, sortKeys, limit,
+                startAfter);
+
+            return results.Select(doc => Collection.Deserialise(doc)).ToList();
         }
     }
 }

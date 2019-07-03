@@ -1,0 +1,14 @@
+[
+  {
+    "Gender": "Female",
+    "YearOfBirth": 1995,
+    "Name": "Chloe Wilson",
+    "FavouriteNumber": 9
+  },
+  {
+    "Gender": "Male",
+    "YearOfBirth": 1965,
+    "Name": "Daniel Jones",
+    "FavouriteNumber": 2
+  }
+]

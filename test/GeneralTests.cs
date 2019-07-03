@@ -62,5 +62,13 @@ namespace DataStoreTest
             var result = await Accounts.Query(x => true).OrderBy(x => x.Name).Limit(2).GetList();
             Verify(result, "TestFirstTwoByName.json");
         }
+
+        [Test]
+        public async Task TestNextTwoByName()
+        {
+            var result = await Accounts.Query(x => true).OrderBy(x => x.Name).Limit(2).GetList();
+            result = await Accounts.Query(x => true).OrderBy(x => x.Name).StartAfter(result[1].Name).Limit(2).GetList();
+            Verify(result, "TestNextTwoByName.json");
+        }
     }
 }

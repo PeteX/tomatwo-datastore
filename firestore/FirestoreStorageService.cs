@@ -160,7 +160,8 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             Collection collection,
             IReadOnlyList<Restriction> restrictions,
             IReadOnlyList<SortKey> sortKeys,
-            int limit)
+            int limit,
+            IReadOnlyList<object> startAfter)
         {
             var collRef = firestoreDb.Collection(collName(collection.Name));
             Query query = collRef;
@@ -197,6 +198,9 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
 
             if (limit != 0)
                 query = query.Limit(limit);
+
+            foreach(object start in startAfter)
+                query = query.StartAfter(start);
 
             QuerySnapshot snapshot;
             if (Transaction == null)
