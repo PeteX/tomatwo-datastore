@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using NUnit.Framework;
 using Tomatwo.DataStore;
 
-namespace DataStoreTest
+namespace DataStoreTests
 {
     public class TestBase
     {

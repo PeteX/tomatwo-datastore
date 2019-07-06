@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DataStoreTest
+namespace DataStoreTests
 {
     public class Contact
     {

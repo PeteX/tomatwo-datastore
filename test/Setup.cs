@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Tomatwo.DataStore;
 using Tomatwo.DataStore.StorageServices.Firestore;
 
-namespace DataStoreTest
+namespace DataStoreTests
 {
     [SetUpFixture]
     public class Setup

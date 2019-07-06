@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace DataStoreTest
+namespace DataStoreTests
 {
     [TestFixture]
     public class GeneralTests : TestBase
@@ -31,7 +31,8 @@ namespace DataStoreTest
         [Test]
         public async Task TestQueryByTwoFields()
         {
-            var result = await Accounts.QueryList(x => x.YearOfBirth < 1956 && x.FavouriteNumber == 9 + 1);
+            int y = 1;
+            var result = await Accounts.QueryList(x => x.YearOfBirth < 1956 && x.FavouriteNumber == 10 + y);
             Verify(result, "TestQueryByTwoFields.json");
         }
 

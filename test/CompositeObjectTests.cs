@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace DataStoreTest
+namespace DataStoreTests
 {
     [TestFixture]
     public class CompositeObjectTests : TestBase

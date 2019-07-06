@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Tomatwo.DataStore;
 
-namespace DataStoreTest
+namespace DataStoreTests
 {
     [TestFixture]
     public class WriteTest : TestBase

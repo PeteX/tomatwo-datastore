@@ -1,6 +1,6 @@
 using Tomatwo.DataStore;
 
-namespace DataStoreTest
+namespace DataStoreTests
 {
     public class Account
     {
