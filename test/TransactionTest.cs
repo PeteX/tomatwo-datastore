@@ -10,13 +10,29 @@ namespace DataStoreTests
     public class TransactionTest : TestBase
     {
         private int iterations = 0;
+        private int commits = 0;
+        private int asyncTest = 0;
         private Account saved;
 
         public async Task AddOne()
         {
             await DataStore.RunTransaction(async () =>
             {
-                Interlocked.Increment(ref iterations);
+                DataStore.Defer(() => Interlocked.Increment(ref iterations));
+                DataStore.AfterCommit(() => Interlocked.Increment(ref commits));
+
+                DataStore.DeferAsync(() =>
+                {
+                    Interlocked.Increment(ref asyncTest);
+                    return Task.CompletedTask;
+                });
+
+                DataStore.AfterCommitAsync(() =>
+                {
+                    Interlocked.Increment(ref asyncTest);
+                    return Task.CompletedTask;
+                });
+
                 var person = await Accounts.QuerySingle(x => x.Name == "Bill Gates");
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 await Accounts.Update(
@@ -38,7 +54,9 @@ namespace DataStoreTests
             }
 
             await Task.WhenAll(tasks);
-            Assert.Greater(iterations, tasks.Length);
+            Assert.Less(tasks.Length, iterations);
+            Assert.AreEqual(tasks.Length, commits);
+            Assert.AreEqual(iterations + commits, asyncTest);
 
             var end = await Accounts.QuerySingle(x => x.Name == "Bill Gates");
             Assert.AreEqual(start.FavouriteNumber + tasks.Length, end.FavouriteNumber);

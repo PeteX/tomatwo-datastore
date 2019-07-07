@@ -16,16 +16,22 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
 {
     public class FirestoreStorageService : IStorageService
     {
-        public Transaction Transaction
-        {
-            get => _Transaction.Value;
-            private set => _Transaction.Value = value;
-        }
-
         private readonly FirestoreStorageOptions options;
         private readonly FirestoreDb firestoreDb;
-        private AsyncLocal<Transaction> _Transaction = new AsyncLocal<Transaction>();
+        private AsyncLocal<TransactionData> _Transaction = new AsyncLocal<TransactionData>();
         private string collName(string name) => (options.Prefix == null ? "" : $"{options.Prefix}.") + name;
+
+        private TransactionData TransactionData
+        {
+            get => _Transaction.Value;
+            set => _Transaction.Value = value;
+        }
+
+        private Transaction FsTransaction
+        {
+            get => TransactionData?.Transaction;
+            set => TransactionData.Transaction = value;
+        }
 
         public FirestoreStorageService(FirestoreStorageOptions options)
         {
@@ -54,7 +60,7 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
                 collRef.Document((string)data["Id"]) : collRef.Document();
             data.Remove("Id");
 
-            if (Transaction == null)
+            if (FsTransaction == null)
             {
                 try
                 {
@@ -70,7 +76,7 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             }
             else
             {
-                Transaction.Create(docRef, data);
+                FsTransaction.Create(docRef, data);
             }
 
             return docRef.Id;
@@ -82,13 +88,13 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             var docRef = collRef.Document((string)data["Id"]);
             data.Remove("Id");
 
-            if (Transaction == null)
+            if (FsTransaction == null)
             {
                 await docRef.SetAsync(data);
             }
             else
             {
-                Transaction.Set(docRef, data);
+                FsTransaction.Set(docRef, data);
             }
         }
 
@@ -100,7 +106,7 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             var docRef = id != null ? collRef.Document(id) : collRef.Document();
             var precondition = upsert ? Precondition.None : null;
 
-            if (Transaction == null)
+            if (FsTransaction == null)
             {
                 try
                 {
@@ -116,7 +122,7 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             }
             else
             {
-                Transaction.Update(docRef, copyChanges, precondition);
+                FsTransaction.Update(docRef, copyChanges, precondition);
             }
 
             return docRef.Id;
@@ -127,13 +133,13 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             var docRef = firestoreDb.Collection(collName(collection.Name)).Document(id);
             DocumentSnapshot result;
 
-            if (Transaction == null)
+            if (FsTransaction == null)
             {
                 result = await docRef.GetSnapshotAsync();
             }
             else
             {
-                result = await Transaction.GetSnapshotAsync(docRef);
+                result = await FsTransaction.GetSnapshotAsync(docRef);
             }
 
             if (!result.Exists)
@@ -146,13 +152,13 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
         {
             var docRef = firestoreDb.Collection(collName(collection.Name)).Document(id);
 
-            if (Transaction == null)
+            if (FsTransaction == null)
             {
                 await docRef.DeleteAsync();
             }
             else
             {
-                Transaction.Delete(docRef);
+                FsTransaction.Delete(docRef);
             }
         }
 
@@ -199,17 +205,17 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             if (limit != 0)
                 query = query.Limit(limit);
 
-            foreach(object start in startAfter)
+            foreach (object start in startAfter)
                 query = query.StartAfter(start);
 
             QuerySnapshot snapshot;
-            if (Transaction == null)
+            if (FsTransaction == null)
             {
                 snapshot = await query.GetSnapshotAsync();
             }
             else
             {
-                snapshot = await Transaction.GetSnapshotAsync(query);
+                snapshot = await FsTransaction.GetSnapshotAsync(query);
             }
 
             return snapshot.Select(doc =>
@@ -224,11 +230,23 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
         {
             try
             {
+                TransactionData = new TransactionData();
                 await firestoreDb.RunTransactionAsync(async transaction =>
                 {
-                    Transaction = transaction;
+                    TransactionData.Reset();
+                    FsTransaction = transaction;
                     await block();
+
+                    foreach (var action in TransactionData.Defer)
+                        action();
+
+                    await Task.WhenAll(TransactionData.DeferAsync.Select(x => x()));
                 });
+
+                foreach (var action in TransactionData.AfterCommit)
+                    action();
+
+                await Task.WhenAll(TransactionData.AfterCommitAsync.Select(x => x()));
             }
             catch (RpcException ex)
             {
@@ -239,6 +257,30 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
 
                 throw;
             }
+            finally
+            {
+                TransactionData = null;
+            }
+        }
+
+        public void Defer(Action action)
+        {
+            TransactionData.Defer.Add(action);
+        }
+
+        public void DeferAsync(Func<Task> action)
+        {
+            TransactionData.DeferAsync.Add(action);
+        }
+
+        public void AfterCommit(Action action)
+        {
+            TransactionData.AfterCommit.Add(action);
+        }
+
+        public void AfterCommitAsync(Func<Task> action)
+        {
+            TransactionData.AfterCommitAsync.Add(action);
         }
     }
 }

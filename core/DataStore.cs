@@ -28,5 +28,10 @@ namespace Tomatwo.DataStore
         {
             await StorageService.RunTransaction(this, block);
         }
+
+        public void Defer(Action action) => StorageService.Defer(action);
+        public void DeferAsync(Func<Task> action) => StorageService.DeferAsync(action);
+        public void AfterCommit(Action action) => StorageService.AfterCommit(action);
+        public void AfterCommitAsync(Func<Task> action) => StorageService.AfterCommitAsync(action);
     }
 }
