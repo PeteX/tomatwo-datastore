@@ -14,7 +14,7 @@ namespace DataStoreTests
 
         public async Task AddOne()
         {
-            await DataStore.Transaction(async () =>
+            await DataStore.RunTransaction(async () =>
             {
                 Interlocked.Increment(ref iterations);
                 var person = await Accounts.QuerySingle(x => x.Name == "Bill Gates");

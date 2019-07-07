@@ -22,9 +22,9 @@ namespace Tomatwo.DataStore
 
         public Collection<T> GetCollection<T>() where T : new() => (Collection<T>)collections[typeof(T)];
 
-        public async Task Transaction(Func<Task> block)
+        public async Task RunTransaction(Func<Task> block)
         {
-            await StorageService.RunTransactionBlock(this, block);
+            await StorageService.RunTransaction(this, block);
         }
     }
 }

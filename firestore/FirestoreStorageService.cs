@@ -220,7 +220,7 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             }).ToList();
         }
 
-        public async Task RunTransactionBlock(DataStore dataStore, Func<Task> block)
+        public async Task RunTransaction(DataStore dataStore, Func<Task> block)
         {
             try
             {

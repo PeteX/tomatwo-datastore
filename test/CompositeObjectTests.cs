@@ -11,7 +11,7 @@ namespace DataStoreTests
         public async Task RunBeforeAnyTests()
         {
             var existing = await Contacts.QueryList(x => true);
-            await DataStore.Transaction(async () =>
+            await DataStore.RunTransaction(async () =>
             {
                 foreach (var doc in existing)
                 {

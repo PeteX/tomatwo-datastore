@@ -21,7 +21,7 @@ namespace DataStoreTests
                 await Accounts.Delete(first.Id);
             }
 
-            await DataStore.Transaction(async () =>
+            await DataStore.RunTransaction(async () =>
             {
                 var existing = await Accounts.QueryList(x => true);
                 foreach (var doc in existing)
@@ -51,7 +51,7 @@ namespace DataStoreTests
                 FavouriteNumber = 10
             });
 
-            await DataStore.Transaction(async () =>
+            await DataStore.RunTransaction(async () =>
             {
                 await Accounts.Add(new Account
                 {

@@ -67,7 +67,7 @@ namespace DataStoreTests
 
             Assert.ThrowsAsync<DuplicateDocumentException>(async () =>
             {
-                await DataStore.Transaction(async () =>
+                await DataStore.RunTransaction(async () =>
                 {
                     try
                     {
@@ -178,7 +178,7 @@ namespace DataStoreTests
 
             Assert.ThrowsAsync<DocumentNotFoundException>(async () =>
             {
-                await DataStore.Transaction(async () =>
+                await DataStore.RunTransaction(async () =>
                 {
                     try
                     {
