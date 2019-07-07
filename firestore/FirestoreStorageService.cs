@@ -194,11 +194,11 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             {
                 if (key.Ascending)
                 {
-                    query = query.OrderBy(key.FieldName);
+                    query = query.OrderBy(key.Field.Name);
                 }
                 else
                 {
-                    query = query.OrderByDescending(key.FieldName);
+                    query = query.OrderByDescending(key.Field.Name);
                 }
             }
 

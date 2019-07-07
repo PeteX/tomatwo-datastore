@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/test/Test.csproj"
+                "${workspaceFolder}/test/DataStoreTests.csproj"
             ],
             "problemMatcher": "$tsc"
         },
@@ -17,7 +17,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/test/Test.csproj"
+                "${workspaceFolder}/test/DataStoreTests.csproj"
             ],
             "problemMatcher": "$tsc"
         },
@@ -28,7 +28,7 @@
             "args": [
                 "watch",
                 "run",
-                "${workspaceFolder}/test/Test.csproj"
+                "${workspaceFolder}/test/DataStoreTests.csproj"
             ],
             "problemMatcher": "$tsc"
         }

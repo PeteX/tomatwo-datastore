@@ -1,10 +1,10 @@
-using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Tomatwo.DataStore
 {
     public struct SortKey
     {
-        public string FieldName;
+        public MemberInfo Field;
         public bool Ascending;
     }
 }

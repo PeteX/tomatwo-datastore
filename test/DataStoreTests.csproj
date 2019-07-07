@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="../core/DataStore.csproj" />
     <ProjectReference Include="../firestore/FireStore.csproj" />
+    <ProjectReference Include="../postgres/Postgres.csproj" />
   </ItemGroup>
 
 </Project>

@@ -257,7 +257,7 @@ namespace Tomatwo.DataStore
             }
         }
 
-        private string selectField(Expression<Func<T, object>> exp)
+        private MemberInfo selectField(Expression<Func<T, object>> exp)
         {
             const string error = "Field selection lambda must be of the form x => x.MemberName.";
 
@@ -271,7 +271,7 @@ namespace Tomatwo.DataStore
             if (member == null)
                 throw new InvalidOperationException(error);
 
-            return member.Member.Name;
+            return member.Member;
         }
 
         public Query<T> Limit(int limit)
@@ -294,13 +294,13 @@ namespace Tomatwo.DataStore
 
         public Query<T> OrderBy(Expression<Func<T, object>> exp)
         {
-            sortKeys.Add(new SortKey { FieldName = selectField(exp), Ascending = true });
+            sortKeys.Add(new SortKey { Field = selectField(exp), Ascending = true });
             return this;
         }
 
         public Query<T> OrderByDescending(Expression<Func<T, object>> exp)
         {
-            sortKeys.Add(new SortKey { FieldName = selectField(exp), Ascending = false });
+            sortKeys.Add(new SortKey { Field = selectField(exp), Ascending = false });
             return this;
         }
 

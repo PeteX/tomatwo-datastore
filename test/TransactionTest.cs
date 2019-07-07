@@ -61,7 +61,7 @@ namespace DataStoreTests
             }
 
             await Task.WhenAll(tasks);
-            Assert.Less(tasks.Length, iterations);
+            Assert.LessOrEqual(tasks.Length, iterations);
             Assert.AreEqual(tasks.Length, commits);
             Assert.AreEqual(iterations + commits, asyncTest);
 

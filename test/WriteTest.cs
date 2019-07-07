@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Tomatwo.DataStore;
@@ -76,16 +75,8 @@ namespace DataStoreTests
             {
                 await DataStore.RunTransaction(async () =>
                 {
-                    try
-                    {
-                        account.YearOfBirth = 1939;
-                        await Accounts.Add(account);
-                    }
-                    catch (Exception ex)
-                    {
-                        // This shouldn't throw, so wrap the exception to avoid a bogus test pass.
-                        throw new InvalidOperationException("Exception thrown from the wrong place.", ex);
-                    }
+                    account.YearOfBirth = 1939;
+                    await Accounts.Add(account);
                 });
             });
 
@@ -187,15 +178,7 @@ namespace DataStoreTests
             {
                 await DataStore.RunTransaction(async () =>
                 {
-                    try
-                    {
-                        await Accounts.Update("Faith Cunningham", account);
-                    }
-                    catch (Exception ex)
-                    {
-                        // This shouldn't throw, so wrap the exception to avoid a bogus test pass.
-                        throw new InvalidOperationException("Exception thrown from the wrong place.", ex);
-                    }
+                    await Accounts.Update("Faith Cunningham", account);
                 });
             });
 

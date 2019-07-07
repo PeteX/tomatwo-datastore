@@ -2,7 +2,10 @@
 /core/obj/
 /firestore/bin/
 /firestore/obj/
+/postgres/bin/
+/postgres/obj/
 /test/bin/
 /test/obj/
 
 /googleKeyfile.json
+/test/backend.txt

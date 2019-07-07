@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using NUnit.Framework;
 using Tomatwo.DataStore;
 using Tomatwo.DataStore.StorageServices.Firestore;
+using Tomatwo.DataStore.StorageServices.Postgres;
 
 namespace DataStoreTests
 {
@@ -37,11 +38,24 @@ namespace DataStoreTests
         {
             if (DataStore == null)
             {
-                IStorageService storageService = new FirestoreStorageService(new FirestoreStorageOptions
+                string backend = File.ReadAllText("../../../backend.txt").Trim();
+                IStorageService storageService;
+
+                if (backend == "postgres")
                 {
-                    CredentialFile = "../../../../googleKeyfile.json",
-                    Prefix = "datastore"
-                });
+                    storageService = new PostgresStorageService(new PostgresStorageOptions
+                    {
+                        Connect = "Server=/run/postgresql; Port=5432; Database=postgres; User Id=datastoretest"
+                    });
+                }
+                else
+                {
+                    storageService = new FirestoreStorageService(new FirestoreStorageOptions
+                    {
+                        CredentialFile = "../../../../googleKeyfile.json",
+                        Prefix = "datastore"
+                    });
+                }
 
                 DataStore = new DataStore(storageService);
                 Accounts = DataStore.AddCollection<Account>("account");
