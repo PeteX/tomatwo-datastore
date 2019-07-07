@@ -7,42 +7,58 @@ namespace DataStoreTests
     public class ExpressionCacheTests : TestBase
     {
         [Test]
-        public void TestConstant()
+        public async Task TestConstant()
         {
-            var result = Accounts.Query(x => x.FavouriteNumber == 10);
-            Assert.True(result.FastPath);
-            Assert.False(result.Cacheable);
-            Assert.False(result.Cached);
+            var query = Accounts.Query(x => x.FavouriteNumber == 10);
+            Assert.True(query.FastPath);
+            Assert.False(query.Cacheable);
+            Assert.False(query.Cached);
+
+            var result = await query.OrderBy(x => x.Name).GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Bill Doors", result.Name);
         }
 
         [Test]
-        public void TestLocal()
+        public async Task TestLocal()
         {
             int number = 10;
-            var result = Accounts.Query(x => x.FavouriteNumber == number);
-            Assert.True(result.FastPath);
-            Assert.False(result.Cacheable);
-            Assert.False(result.Cached);
+            var query = Accounts.Query(x => x.FavouriteNumber == number);
+            Assert.True(query.FastPath);
+            Assert.False(query.Cacheable);
+            Assert.False(query.Cached);
+
+            var result = await query.OrderBy(x => x.Name).GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Bill Doors", result.Name);
         }
 
         private int numberField = 10;
         [Test]
-        public void TestField()
+        public async Task TestField()
         {
-            var result = Accounts.Query(x => x.FavouriteNumber == numberField);
-            Assert.True(result.FastPath);
-            Assert.False(result.Cacheable);
-            Assert.False(result.Cached);
+            var query = Accounts.Query(x => x.FavouriteNumber == numberField);
+            Assert.True(query.FastPath);
+            Assert.False(query.Cacheable);
+            Assert.False(query.Cached);
+
+            var result = await query.OrderBy(x => x.Name).GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Bill Doors", result.Name);
         }
 
         private int numberProperty { get; set; } = 10;
         [Test]
-        public void TestProperty()
+        public async Task TestProperty()
         {
-            var result = Accounts.Query(x => x.FavouriteNumber == numberProperty);
-            Assert.True(result.FastPath);
-            Assert.False(result.Cacheable);
-            Assert.False(result.Cached);
+            var query = Accounts.Query(x => x.FavouriteNumber == numberProperty);
+            Assert.True(query.FastPath);
+            Assert.False(query.Cacheable);
+            Assert.False(query.Cached);
+
+            var result = await query.OrderBy(x => x.Name).GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Bill Doors", result.Name);
         }
 
         [Test]
@@ -94,6 +110,94 @@ namespace DataStoreTests
             var result = await query.GetSingleOrDefault();
             Assert.IsNotNull(result);
             Assert.AreEqual(1955, result.YearOfBirth);
+        }
+
+        [Test]
+        public async Task TestAddQuery()
+        {
+            int y = -1;
+
+            var query = Accounts.Query(x => x.FavouriteNumber == y + 3);
+            Assert.False(query.FastPath);
+            Assert.True(query.Cacheable);
+            Assert.False(query.Cached);
+            var result = await query.GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Daniel Jones", result.Name);
+
+            query = Accounts.Query(x => x.FavouriteNumber == y + 3);
+            Assert.False(query.FastPath);
+            Assert.True(query.Cacheable);
+            Assert.True(query.Cached);
+            result = await query.GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Daniel Jones", result.Name);
+        }
+
+        [Test]
+        public async Task TestSubtractQuery()
+        {
+            int y = 1;
+
+            var query = Accounts.Query(x => x.FavouriteNumber == 3 - y);
+            Assert.False(query.FastPath);
+            Assert.True(query.Cacheable);
+            Assert.False(query.Cached);
+            var result = await query.GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Daniel Jones", result.Name);
+
+            query = Accounts.Query(x => x.FavouriteNumber == 3 - y);
+            Assert.False(query.FastPath);
+            Assert.True(query.Cacheable);
+            Assert.True(query.Cached);
+            result = await query.GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Daniel Jones", result.Name);
+        }
+
+        [Test]
+        public async Task TestMultiplyQuery()
+        {
+            int y = 1;
+
+            var query = Accounts.Query(x => x.FavouriteNumber == y * 2);
+            Assert.False(query.FastPath);
+            Assert.True(query.Cacheable);
+            Assert.False(query.Cached);
+            var result = await query.GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Daniel Jones", result.Name);
+
+            query = Accounts.Query(x => x.FavouriteNumber == y * 2);
+            Assert.False(query.FastPath);
+            Assert.True(query.Cacheable);
+            Assert.True(query.Cached);
+            result = await query.GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Daniel Jones", result.Name);
+        }
+
+        [Test]
+        public async Task TestDivideQuery()
+        {
+            int y = 4;
+
+            var query = Accounts.Query(x => x.FavouriteNumber == y / 2);
+            Assert.False(query.FastPath);
+            Assert.True(query.Cacheable);
+            Assert.False(query.Cached);
+            var result = await query.GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Daniel Jones", result.Name);
+
+            query = Accounts.Query(x => x.FavouriteNumber == y / 2);
+            Assert.False(query.FastPath);
+            Assert.True(query.Cacheable);
+            Assert.True(query.Cached);
+            result = await query.GetFirstOrDefault();
+            Assert.NotNull(result);
+            Assert.AreEqual("Daniel Jones", result.Name);
         }
     }
 }

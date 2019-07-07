@@ -32,7 +32,7 @@ namespace DataStoreTests
         public async Task TestQueryByTwoFields()
         {
             int y = 1;
-            var result = await Accounts.QueryList(x => x.YearOfBirth < 1956 && x.FavouriteNumber == 10 + y);
+            var result = await Accounts.QueryList(x => x.YearOfBirth < 1956 && x.FavouriteNumber == 9 + y);
             Verify(result, "TestQueryByTwoFields.json");
         }
 

@@ -26,9 +26,9 @@ namespace DataStoreTests
 
         protected void Verify(object result, string desired)
         {
-            var firstString = Canonicalise(result);
-            var secondString = File.ReadAllText($"../../../results/{desired}");
-            Assert.AreEqual(firstString.Trim(), secondString.Trim());
+            var resultString = Canonicalise(result);
+            var desiredString = File.ReadAllText($"../../../results/{desired}");
+            Assert.AreEqual(desiredString.Trim(), resultString.Trim());
         }
     }
 }
