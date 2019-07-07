@@ -10,13 +10,12 @@ namespace DataStoreTests
         [OneTimeSetUp]
         public async Task RunBeforeAnyTests()
         {
+            Setup();
             var existing = await Contacts.QueryList(x => true);
             await DataStore.RunTransaction(async () =>
             {
                 foreach (var doc in existing)
-                {
                     await Contacts.Delete(doc.Id);
-                }
             });
         }
 

@@ -6,6 +6,14 @@ namespace DataStoreTests
     [TestFixture]
     public class ExpressionCacheTests : TestBase
     {
+        [OneTimeSetUp]
+        public async Task RunBeforeAnyTests()
+        {
+            Setup();
+            await ClearExisting();
+            await AddTestData();
+        }
+
         [Test]
         public async Task TestConstant()
         {

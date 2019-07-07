@@ -17,6 +17,13 @@ namespace DataStoreTests
             FavouriteNumber = 5
         };
 
+        [OneTimeSetUp]
+        public async Task RunBeforeAnyTests()
+        {
+            Setup();
+            await ClearExisting();
+        }
+
         [Test]
         public async Task TestCreateRandomId()
         {

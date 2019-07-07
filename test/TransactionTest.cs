@@ -12,7 +12,14 @@ namespace DataStoreTests
         private int iterations = 0;
         private int commits = 0;
         private int asyncTest = 0;
-        private Account saved;
+
+        [OneTimeSetUp]
+        public async Task RunBeforeAnyTests()
+        {
+            Setup();
+            await ClearExisting();
+            await AddTestData();
+        }
 
         public async Task AddOne()
         {
@@ -60,18 +67,6 @@ namespace DataStoreTests
 
             var end = await Accounts.QuerySingle(x => x.Name == "Bill Gates");
             Assert.AreEqual(start.FavouriteNumber + tasks.Length, end.FavouriteNumber);
-        }
-
-        [OneTimeSetUp]
-        public async Task OneTimeSetUp()
-        {
-            saved = await Accounts.QuerySingle(x => x.Name == "Bill Gates");
-        }
-
-        [OneTimeTearDown]
-        public async Task OneTimeTearDown()
-        {
-            await Accounts.Set(saved);
         }
     }
 }

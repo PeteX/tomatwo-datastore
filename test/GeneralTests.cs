@@ -6,10 +6,18 @@ namespace DataStoreTests
     [TestFixture]
     public class GeneralTests : TestBase
     {
+        [OneTimeSetUp]
+        public async Task RunBeforeAnyTests()
+        {
+            Setup();
+            await ClearExisting();
+            await AddTestData();
+        }
+
         [Test]
         public async Task TestGet()
         {
-            var result = await Accounts.Get(Setup.Gates);
+            var result = await Accounts.Get(Gates);
             Verify(result, "TestGet.json");
         }
 
