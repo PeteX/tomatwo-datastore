@@ -153,9 +153,8 @@ namespace DataStoreTests
             });
 
             DataStore = new DataStore(storageService);
-            DataStore.AddCollection<Account>("account");
+            Accounts = DataStore.AddCollection<Account>("account");
             DataStore.AddCollection<Contact>("contact");
-            Accounts = DataStore.GetCollection<Account>();
             Contacts = DataStore.GetCollection<Contact>();
             await clearExisting();
             await addTestData();

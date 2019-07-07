@@ -15,9 +15,11 @@ namespace Tomatwo.DataStore
             this.StorageService = storageService;
         }
 
-        public void AddCollection<T>(string name) where T : new()
+        public Collection<T> AddCollection<T>(string name) where T : new()
         {
-            collections[typeof(T)] = new Collection<T>(this, name);
+            var collection = new Collection<T>(this, name);
+            collections[typeof(T)] = collection;
+            return collection;
         }
 
         public Collection<T> GetCollection<T>() where T : new() => (Collection<T>)collections[typeof(T)];
