@@ -3,6 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <LangVersion>8.0</LangVersion>
+    <PackageId>Tomatwo.DataStore.StorageServices.Firestore</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageDescription>The DataStore stores data with transactional semantics on Postgres or Firebase.  This is the Google Firestore provider.</PackageDescription>
+    <Version>0.0.1</Version>
+    <Authors>Pete Chown</Authors>
+    <Company>Tomatwo.Com</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
