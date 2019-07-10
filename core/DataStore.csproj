@@ -6,10 +6,14 @@
     <PackageId>Tomatwo.DataStore</PackageId>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageDescription>The DataStore stores data with transactional semantics on Postgres or Firebase.</PackageDescription>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <Authors>Pete Chown</Authors>
     <Company>Tomatwo.Com</Company>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tomatwo.DependencyInjection" Version="0.0.3" />
+  </ItemGroup>
 
 </Project>
