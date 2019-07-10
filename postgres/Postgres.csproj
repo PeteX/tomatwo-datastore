@@ -6,7 +6,7 @@
     <PackageId>Tomatwo.DataStore.StorageServices.Postgres</PackageId>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageDescription>The DataStore stores data with transactional semantics on Postgres or Firebase.  This is the Postgres provider.</PackageDescription>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <Authors>Pete Chown</Authors>
     <Company>Tomatwo.Com</Company>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
