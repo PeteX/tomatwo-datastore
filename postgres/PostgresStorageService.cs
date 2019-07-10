@@ -39,24 +39,24 @@ namespace Tomatwo.DataStore.StorageServices.Postgres
             this.options = options;
         }
 
-        internal TransactionData TransactionData
-        {
-            get
-            {
-                if (_TransactionData.Value == null)
-                    _TransactionData.Value = new TransactionData();
-
-                return _TransactionData.Value;
-            }
-        }
-
+        internal TransactionData TransactionData => _TransactionData.Value;
         private NpgsqlConnection PgConnection => TransactionData.Connection;
 
-        private async Task<IDisposable> requireConnection()
+        // There is a subtlety here.  The AsyncLocal state propagates down the stack of async calls, but not up.  This
+        // means that the TransactionData object must be set at the point of entry into PostgresStorageService.  Any
+        // higher up the stack and it will get shared between different clients, any lower and it will get lost before
+        // all the work is completed.
+        //
+        // If requireConnection is async, the value is lost immediately on return, because it is a move up the call
+        // stack.  To avoid this, it is synchronous but returns a Task.
+
+        private Task<IDisposable> requireConnection()
         {
+            if (TransactionData == null)
+                _TransactionData.Value = new TransactionData();
+
             var result = new ConnectionCount(this, options.Connect);
-            await result.Open();
-            return result;
+            return result.Open().ContinueWith(_ => (IDisposable)result);
         }
 
         private string getCast(Type type)
