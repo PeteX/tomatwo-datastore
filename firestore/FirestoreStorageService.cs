@@ -12,6 +12,17 @@ using Grpc.Auth;
 using Grpc.Core;
 using Newtonsoft.Json;
 
+// On 11.7.19 this was benchmarked using a Google Compute Engine instance running in us-central1, which is the same
+// region as the database.
+//
+// Simple reads started out taking about 100ms but this quickly came down to about 24ms, so presumably the slow start
+// was because of the code being JITed.  (The connection was already established because the program started by setting
+// up test data.)
+//
+// Simple writes also started out at around 100ms but these only came down to about 57ms.
+//
+// Variation between test runs seems to be about 50%.
+
 namespace Tomatwo.DataStore.StorageServices.Firestore
 {
     public class FirestoreStorageService : IStorageService
