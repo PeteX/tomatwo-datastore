@@ -34,19 +34,27 @@ namespace DataStoreTests
 
         private async Task<bool> clash()
         {
-            var result = await Accounts.Get(Gates);
-            result.FavouriteNumber++;
-            await Accounts.Set(result);
+            int iterations = 0;
 
-            // The return value is not important, but making it the same as TransactionTest makes it easier to handle
-            // the results.
+            await Task.Delay(TimeSpan.FromMilliseconds(500));
+            Assert.False(DataStore.IsTransactionActive);
+            await DataStore.RunTransaction(async () =>
+            {
+                iterations++;
+                Assert.True(DataStore.IsTransactionActive);
+                var result = await Accounts.Get(Gates);
+                result.FavouriteNumber++;
+                await Accounts.Set(result);
+            });
 
-            return true;
+            return iterations > 1;
         }
 
         [Test]
         public async Task TestInterception()
         {
+            Assert.False(DataStore.IsTransactionActive);
+
             var service = serviceProvider.GetService<InterceptService>();
             Task<bool>[] tasks = new[]{
                 service.TransactionTest(Gates),
@@ -54,9 +62,10 @@ namespace DataStoreTests
             };
 
             var results = await Task.WhenAll(tasks);
-            Assert.True(results[0]);
-            Assert.True(results[1]);
-            Assert.Greater(InterceptService.Iterations, 1);
+            Assert.True(results[0] || results[1]);
+
+            var final = await Accounts.Get(Gates);
+            Assert.AreEqual(65538, final.FavouriteNumber);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using NUnit.Framework;
 using Tomatwo.DataStore;
 using Tomatwo.DependencyInjection;
 
@@ -7,14 +8,16 @@ namespace DataStoreTests
 {
     public class InterceptService
     {
-        public static int Iterations = 0;
+        private int iterations = 0;
 
         [Inject] protected DataStore DataStore { private get; set; }
 
         [TransactionRequired]
         public virtual async Task<bool> TransactionTest(string gates)
         {
-            Iterations++;
+            Assert.True(DataStore.IsTransactionActive);
+
+            iterations++;
             var Accounts = DataStore.GetCollection<Account>();
             var account = await Accounts.Get(gates);
             await Task.Delay(TimeSpan.FromMilliseconds(1000));
@@ -22,7 +25,7 @@ namespace DataStoreTests
             account.FavouriteNumber++;
             await Accounts.Set(account);
 
-            return account.FavouriteNumber == 65538;
+            return iterations > 1;
         }
     }
 }

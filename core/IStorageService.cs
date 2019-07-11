@@ -7,6 +7,7 @@ namespace Tomatwo.DataStore
     public interface IStorageService
     {
         Task RunTransaction(DataStore dataStore, Func<Task> block);
+        bool IsTransactionActive { get; }
         void Defer(Action action);
         void DeferAsync(Func<Task> action);
         void AfterCommit(Action action);

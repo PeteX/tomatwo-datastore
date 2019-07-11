@@ -24,10 +24,8 @@ namespace Tomatwo.DataStore
 
         public Collection<T> GetCollection<T>() where T : new() => (Collection<T>)collections[typeof(T)];
 
-        public async Task RunTransaction(Func<Task> block)
-        {
-            await StorageService.RunTransaction(this, block);
-        }
+        public Task RunTransaction(Func<Task> block) => StorageService.RunTransaction(this, block);
+        public bool IsTransactionActive => StorageService.IsTransactionActive;
 
         public void Defer(Action action) => StorageService.Defer(action);
         public void DeferAsync(Func<Task> action) => StorageService.DeferAsync(action);

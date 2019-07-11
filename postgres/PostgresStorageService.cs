@@ -347,6 +347,8 @@ namespace Tomatwo.DataStore.StorageServices.Postgres
             }
         }
 
+        public bool IsTransactionActive => TransactionData != null;
+
         public void Defer(Action action)
         {
             TransactionData.Defer.Add(action);

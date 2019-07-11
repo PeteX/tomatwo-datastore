@@ -22,6 +22,13 @@ namespace DataStoreTests
         }
 
         [Test]
+        public async Task TestGetNonexistent()
+        {
+            var result = await Accounts.Get("nonexistent");
+            Assert.IsNull(result);
+        }
+
+        [Test]
         public async Task TestQueryAllDocuments()
         {
             var result = await Accounts.Query(x => true).OrderBy(x => x.Name).GetList();

@@ -263,6 +263,8 @@ namespace Tomatwo.DataStore.StorageServices.Firestore
             }
         }
 
+        public bool IsTransactionActive => TransactionData != null;
+
         public void Defer(Action action)
         {
             TransactionData.Defer.Add(action);
