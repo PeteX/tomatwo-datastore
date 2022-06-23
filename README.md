@@ -1,0 +1,1 @@
+Please note that this repository is unmaintained.  Recently I received a notification about a security vulnerability in one of its dependencies.  I applied the suggested patch, but haven't tested the code subsequently.  As such it may or may not work.
